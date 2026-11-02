@@ -146,9 +146,10 @@ func EndpointsForHostsAndTargets(hostnames, targets []string) []*Endpoint {
 // by combining their targets. CNAME endpoints are not merged (per DNS spec) but are deduplicated.
 // This is useful when multiple resources (e.g., pods, nodes) contribute targets to the same DNS record.
 //
-// When several endpoints merge into one, the first endpoint's scalar metadata (TTL, ProviderSpecific,
-// Labels, ...) is retained. RefObjects from all contributing endpoints are accumulated, so the merged
-// record references every source object that contributed to it. "First" follows the input slice order.
+// When several endpoints merge into one, the endpoint with the lowest resource label keeps its
+// scalar metadata (TTL, ProviderSpecific, Labels, ...), or the first in input order when none has one.
+// RefObjects from all of them are accumulated, so the merged record references every source object
+// that contributed to it.
 func MergeEndpoints(endpoints []*Endpoint) []*Endpoint {
 	if len(endpoints) == 0 {
 		return endpoints
@@ -208,5 +209,5 @@ func MergeEndpoints(endpoints []*Endpoint) []*Endpoint {
 // informer order, which changes between calls, and the base's labels reach the registry.
 func resourceBefore(a, b *Endpoint) bool {
 	ra, rb := a.Labels[ResourceLabelKey], b.Labels[ResourceLabelKey]
-	return ra != "" && rb != "" && ra < rb
+	return ra != "" && (rb == "" || ra < rb)
 }

@@ -508,8 +508,14 @@ func TestMergeEndpoints_KeepsLowestResource(t *testing.T) {
 			wantProxied:  "true",
 		},
 		{
-			name:         "first kept when a duplicate has no resource label",
+			name:         "labelled kept over unlabelled listed last",
 			input:        []*Endpoint{newEndpoint("b", "192.0.2.2", "false"), newEndpoint("", "192.0.2.1", "true")},
+			wantResource: "ingress/default/b",
+			wantProxied:  "false",
+		},
+		{
+			name:         "labelled kept over unlabelled listed first",
+			input:        []*Endpoint{newEndpoint("", "192.0.2.1", "true"), newEndpoint("b", "192.0.2.2", "false")},
 			wantResource: "ingress/default/b",
 			wantProxied:  "false",
 		},
